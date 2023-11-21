@@ -12,7 +12,7 @@ export default async function handler(
       method: 'GET',
       headers: {
         'x-api-key':
-          'huddle01_sk_06c16a46-b3a4-455a-afd9-cfa252fc6ad3_nh4z4i5a1dh8yu0j',
+          process.env.SIMPLEHASH_API_KEY || '',
       },
     }
   );

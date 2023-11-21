@@ -18,7 +18,7 @@ const Home = () => {
   const broadcastMessages = async () => {
     const client = await initXmtp();
     const response = await fetch(
-      `/api/getList?address=0x9e88852ad8ccacfbd90251ad045b6ac239d88a43`
+      `/api/getList?address=0x517dB5491877b5C42Cf52E37dE65993ADf8fb36C`
     );
     const data = await response.json();
     const { addresses } = data;
