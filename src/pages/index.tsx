@@ -9,6 +9,7 @@ const Home = () => {
   const [isLoadingBroadCast, setIsLoadingBroadCast] = useState(false);
   const [isLoadingSingle, setIsLoadingSingle] = useState(false);
   const [isLoadingTrivia, setIsLoadingTrivia] = useState(false);
+  const [previewMessage, setPreviewMessage] = useState('');
   const [message, setMessage] = useState('');
   const { data: walletClient } = useWalletClient();
 
@@ -78,17 +79,21 @@ const Home = () => {
 
     const allConversations = await client.conversations.list();
     if (!allConversations) return;
+
     for (const conversation of allConversations) {
+      console.log(conversation.peerAddress);
       const messages = await conversation.messages();
       if (!messages) return;
-      for (const message of messages) {
+      for (let i = messages.length-1 ; i >= 0; i--) {
+        console.log(messages[i].content);
         if (
-          message.content === 'Start the hunt' ||
-          message.content === 'Start the Hunt' ||
-          (message.content === 'start the hunt' &&
-            addresses.includes(message.senderAddress))
+          messages[i].content === 'Start the hunt' ||
+          messages[i].content === 'Start the Hunt' ||
+          (messages[i].content === 'start the hunt' &&
+            addresses.includes(messages[i].senderAddress))
         ) {
-          addressesForTrivia.push(message.senderAddress);
+          addressesForTrivia.push(messages[i].senderAddress);
+          break;
         }
       }
     }
@@ -109,23 +114,27 @@ const Home = () => {
           await conversation.send(message);
         }
       }
-      setIsLoadingBroadCast(false);
+      setIsLoadingTrivia(false);
     } catch (e) {
       toast.error(`Error: ${e}`);
-      setIsLoadingBroadCast(false);
+      setIsLoadingTrivia(false);
       console.log(e);
     }
 
+    console.log(addressesForTrivia);
   };
 
-  const previewMessage = async () => {
+  const sendPreviewMessage = async () => {
     const client = await initXmtp();
     if (!client) {
       toast.error('Please connect your wallet');
       setIsLoadingSingle(false);
       return;
     }
-    const addresses = ['0x3039e4a4a540F35ae03A09f3D5A122c49566f919'];
+    const addresses = [
+      '0x3039e4a4a540F35ae03A09f3D5A122c49566f919',
+      '0xCAa931a56cCbF30B82CED72604DdC7182964bB71',
+    ];
     try {
       const broadcasts_canMessage = await client.canMessage(addresses);
       for (let i = 0; i < addresses.length; i++) {
@@ -143,6 +152,17 @@ const Home = () => {
         }
       }
       toast.success('Preview message sent');
+
+      const conversations = await client.conversations.list();
+      if (!conversations) return;
+
+      const messages = await conversations[0].messages();
+
+      if (!messages) return;
+      setPreviewMessage(
+        messages[messages.length - 1].content?.toString() || ''
+      );
+
       setIsLoadingSingle(false);
     } catch (e) {
       toast.error(`Error: ${e}`);
@@ -154,7 +174,7 @@ const Home = () => {
   return (
     <>
       <div className="flex m-4 justify-end">
-        <w3m-button />
+        <w3m-button balance="hide" />
       </div>
       <div className="flex flex-col gap-4 h-[90vh] justify-center items-center">
         <textarea
@@ -163,12 +183,20 @@ const Home = () => {
           value={message}
           onChange={(e) => setMessage(e.target.value)}
         />
+        {previewMessage !== '' && (
+          <>
+            <span>Preview Message </span>
+            <div className="w-3/4 md:w-1/3 bg-white border-gray-300 rounded-lg text-black p-2">
+              {previewMessage}
+            </div>
+          </>
+        )}
         <div className="flex flex-col sm:flex-row gap-4">
           <button
             className="bg-blue-500 hover:bg-blue-700 font-bold py-2 px-4 rounded"
             onClick={async () => {
               setIsLoadingSingle(true);
-              await previewMessage();
+              await sendPreviewMessage();
             }}
           >
             {isLoadingSingle ? 'Loading...' : 'Send Preview Message'}
