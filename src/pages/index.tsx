@@ -1,7 +1,5 @@
 import { Client } from '@xmtp/xmtp-js';
-import { ethers } from 'ethers';
 import { useState } from 'react';
-import { BrowserProvider } from 'ethers';
 import { useWalletClient } from 'wagmi';
 import toast from 'react-hot-toast';
 
