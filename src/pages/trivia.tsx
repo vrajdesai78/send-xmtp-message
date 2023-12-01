@@ -15,11 +15,11 @@ const Home = () => {
   const { address } = useAccount();
 
   const initXmtp = async () => {
-    if (address !== '0x6C4de2E796f777eeaEc1195A7e78Ab85F2aE084D') {
-      toast.error('Please connect to filbangalore.eth to send broadcast messages');
-      setIsLoadingBroadCast(false);
-      setIsLoadingSingle(false);
-      return;
+    if (address !== '0xb64d29882530413cFEbfc082647AcCC01Dfe765F' || !walletClient) {
+        toast.error('Please connect to filtreasurehunt.eth to send trivia message');
+        setIsLoadingBroadCast(false);
+        setIsLoadingSingle(false);
+        return;
     }
     if (!walletClient) {
       alert('Please connect your wallet');
@@ -31,24 +31,48 @@ const Home = () => {
     return xmtp;
   };
 
-  const broadcastMessages = async () => {
+  const triviaMessage = async () => {
     const client = await initXmtp();
     if (!client) {
       toast.error('Please connect your wallet');
       setIsLoadingBroadCast(false);
       return;
     }
+
     const response = await fetch(
       `/api/getList?address=0x517dB5491877b5C42Cf52E37dE65993ADf8fb36C`
     );
     const data = await response.json();
     const { addresses } = data;
-    console.log(addresses);
+
+    const addressesForTrivia = [];
+
+    const allConversations = await client.conversations.list();
+    if (!allConversations) return;
+
+    for (const conversation of allConversations) {
+      console.log(conversation.peerAddress);
+      const messages = await conversation.messages();
+      if (!messages) return;
+      for (let i = messages.length - 1; i >= 0; i--) {
+        console.log(messages[i].content);
+        if (
+          messages[i].content === 'Start the hunt' ||
+          messages[i].content === 'Start the Hunt' ||
+          (messages[i].content === 'start the hunt' &&
+            addresses.includes(messages[i].senderAddress))
+        ) {
+          addressesForTrivia.push(messages[i].senderAddress);
+          break;
+        }
+      }
+    }
+
     try {
-      const broadcasts_canMessage = await client.canMessage(addresses);
-      for (let i = 0; i < addresses.length; i++) {
+      const broadcasts_canMessage = await client.canMessage(addressesForTrivia);
+      for (let i = 0; i < addressesForTrivia.length; i++) {
         //Checking the activation status of each wallet
-        const wallet = addresses[i];
+        const wallet = addressesForTrivia[i];
         const canMessage = (broadcasts_canMessage as any)[i];
         console.log(wallet, canMessage);
         if ((broadcasts_canMessage as any)[i]) {
@@ -60,12 +84,14 @@ const Home = () => {
           await conversation.send(message);
         }
       }
-      setIsLoadingBroadCast(false);
+      setIsLoadingTrivia(false);
     } catch (e) {
       toast.error(`Error: ${e}`);
-      setIsLoadingBroadCast(false);
+      setIsLoadingTrivia(false);
       console.log(e);
     }
+
+    console.log(addressesForTrivia);
   };
 
   const sendPreviewMessage = async () => {
@@ -119,8 +145,10 @@ const Home = () => {
     <>
       <div className="flex m-4 justify-between">
         <button
-          className="bg-blue-500 hover:bg-blue-700 font-bold py-2 px-4 rounded" onClick={() => router.push('/trivia')}>
-          Send Trivia
+          className="bg-blue-500 hover:bg-blue-700 font-bold py-2 px-4 rounded"
+          onClick={() => router.push('/')}
+        >
+          Send Broadcast
         </button>
         <w3m-button balance="hide" />
       </div>
@@ -149,14 +177,15 @@ const Home = () => {
           >
             {isLoadingSingle ? 'Loading...' : 'Send Preview Message'}
           </button>
+
           <button
             className="bg-blue-500 hover:bg-blue-700 font-bold py-2 px-4 rounded"
             onClick={async () => {
-              setIsLoadingBroadCast(true);
-              await broadcastMessages();
+              setIsLoadingTrivia(true);
+              await triviaMessage();
             }}
           >
-            {isLoadingBroadCast ? 'Loading...' : 'Send Broadcast Message'}
+            {isLoadingTrivia ? 'Loading...' : 'Send Trivia Message'}
           </button>
         </div>
       </div>
