@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useWalletClient } from 'wagmi';
 import { Client } from '@xmtp/xmtp-js';
-import { ContentTypeAttachment, ContentTypeRemoteAttachment } from '@xmtp/content-type-remote-attachment';
+import { Attachment, ContentTypeAttachment, ContentTypeRemoteAttachment } from '@xmtp/content-type-remote-attachment';
 
 const Reveal = () => {
   const [isLoadingBroadCast, setIsLoadingBroadCast] = useState(false);
@@ -53,14 +53,14 @@ const Reveal = () => {
             r.blob()
           );
 
-          const attachement = {
+          const attachment: Attachment = {
             filename: `${i + 1}.png`,
             mimeType: fileBlob.type,
             data: new Uint8Array(await fileBlob.arrayBuffer()),
           };
 
-          const res = await conversation.send(attachement as any, {
-            contentType: ContentTypeAttachment,
+          const res = await conversation.send(attachment as any, {
+            contentType: ContentTypeAttachment
           });
 
           console.log({ res });
