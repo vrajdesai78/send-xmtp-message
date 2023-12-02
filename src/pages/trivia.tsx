@@ -15,11 +15,16 @@ const Home = () => {
   const { address } = useAccount();
 
   const initXmtp = async () => {
-    if (address !== '0xb64d29882530413cFEbfc082647AcCC01Dfe765F' || !walletClient) {
-        toast.error('Please connect to filtreasurehunt.eth to send trivia message');
-        setIsLoadingBroadCast(false);
-        setIsLoadingSingle(false);
-        return;
+    if (
+      address !== '0xb64d29882530413cFEbfc082647AcCC01Dfe765F' ||
+      !walletClient
+    ) {
+      toast.error(
+        'Please connect to filtreasurehunt.eth to send trivia message'
+      );
+      setIsLoadingBroadCast(false);
+      setIsLoadingSingle(false);
+      return;
     }
     if (!walletClient) {
       alert('Please connect your wallet');
@@ -101,17 +106,14 @@ const Home = () => {
       setIsLoadingSingle(false);
       return;
     }
-    const addresses = [
-      '0x3039e4a4a540F35ae03A09f3D5A122c49566f919',
-      '0xCAa931a56cCbF30B82CED72604DdC7182964bB71',
-    ];
+    const addresses = ['0xCAa931a56cCbF30B82CED72604DdC7182964bB71'];
     try {
       const broadcasts_canMessage = await client.canMessage(addresses);
       for (let i = 0; i < addresses.length; i++) {
         //Checking the activation status of each wallet
         const wallet = addresses[i];
         const canMessage = (broadcasts_canMessage as any)[i];
-        console.log(wallet, canMessage);
+        console.log({ wallet, canMessage, addresses });
         if ((broadcasts_canMessage as any)[i]) {
           //If activated, start
           const conversation = await client.conversations.newConversation(
@@ -127,6 +129,8 @@ const Home = () => {
       if (!conversations) return;
 
       const messages = await conversations[0].messages();
+
+      console.log(messages);
 
       if (!messages) return;
       setPreviewMessage(

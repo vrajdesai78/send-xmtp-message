@@ -16,7 +16,9 @@ const Home = () => {
 
   const initXmtp = async () => {
     if (address !== '0x6C4de2E796f777eeaEc1195A7e78Ab85F2aE084D') {
-      toast.error('Please connect to filbangalore.eth to send broadcast messages');
+      toast.error(
+        'Please connect to filbangalore.eth to send broadcast messages'
+      );
       setIsLoadingBroadCast(false);
       setIsLoadingSingle(false);
       return;
@@ -75,10 +77,7 @@ const Home = () => {
       setIsLoadingSingle(false);
       return;
     }
-    const addresses = [
-      '0x3039e4a4a540F35ae03A09f3D5A122c49566f919',
-      '0xCAa931a56cCbF30B82CED72604DdC7182964bB71',
-    ];
+    const addresses = ['0xCAa931a56cCbF30B82CED72604DdC7182964bB71'];
     try {
       const broadcasts_canMessage = await client.canMessage(addresses);
       for (let i = 0; i < addresses.length; i++) {
@@ -100,13 +99,21 @@ const Home = () => {
       const conversations = await client.conversations.list();
       if (!conversations) return;
 
-      const messages = await conversations[0].messages();
+      const opts = {
+        startTime: new Date(Date.now() - 1 * 60 * 60 * 1000),
+      };
 
-      if (!messages) return;
-      setPreviewMessage(
-        messages[messages.length - 1].content?.toString() || ''
-      );
-
+      const messages = await conversations[0].messages(opts);
+      for (let cons of conversations) {
+        if (cons.peerAddress === '0xCAa931a56cCbF30B82CED72604DdC7182964bB71') {
+          const messages = await cons.messages();
+          console.log('content', messages[messages.length - 1].content);
+          setPreviewMessage(
+            messages[messages.length - 1].content?.toString() || ''
+          );
+          break;
+        }
+      }
       setIsLoadingSingle(false);
     } catch (e) {
       toast.error(`Error: ${e}`);
@@ -119,7 +126,9 @@ const Home = () => {
     <>
       <div className="flex m-4 justify-between">
         <button
-          className="bg-blue-500 hover:bg-blue-700 font-bold py-2 px-4 rounded" onClick={() => router.push('/trivia')}>
+          className="bg-blue-500 hover:bg-blue-700 font-bold py-2 px-4 rounded"
+          onClick={() => router.push('/trivia')}
+        >
           Send Trivia
         </button>
         <w3m-button balance="hide" />
