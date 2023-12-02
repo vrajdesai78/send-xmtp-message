@@ -40,7 +40,7 @@ const Home = () => {
     }
 
     const response = await fetch(
-      `/api/getList?address=0x517dB5491877b5C42Cf52E37dE65993ADf8fb36C`
+      `/api/getList?address=0x02c510be69fe87e052e065d8a40b437d55907b48`
     );
     const data = await response.json();
     const { addresses } = data;
