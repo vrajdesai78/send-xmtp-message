@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useWalletClient } from 'wagmi';
 import { Client } from '@xmtp/xmtp-js';
-import { Attachment, ContentTypeAttachment, ContentTypeRemoteAttachment } from '@xmtp/content-type-remote-attachment';
+import { Attachment, AttachmentCodec, ContentTypeAttachment, ContentTypeRemoteAttachment } from '@xmtp/content-type-remote-attachment';
 
 const Reveal = () => {
   const [isLoadingBroadCast, setIsLoadingBroadCast] = useState(false);
@@ -19,14 +19,12 @@ const Reveal = () => {
 
   const sendRevealedNFT = async () => {
     const client = await initXmtp();
+    client?.registerCodec(new AttachmentCodec())
     if (!client) {
       alert('Please connect your wallet');
       setIsLoadingBroadCast(false);
       return;
     }
-
-    // get images from /output/[number].png and send them to the list of addresses
-    // send [1].png to [1] address, [2].png to [2] address, etc.
 
     const addresses = [
       '0xCa49ABcDC4F7E95d122Cb1F0895f01B7a6Ba0d20',
