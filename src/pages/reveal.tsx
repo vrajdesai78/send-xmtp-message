@@ -59,7 +59,7 @@ const Reveal = () => {
             data: new Uint8Array(await fileBlob.arrayBuffer()),
           };
 
-          const res = await conversation.send(attachement, {
+          const res = await conversation.send(attachement as any, {
             contentType: ContentTypeAttachment,
           });
 
